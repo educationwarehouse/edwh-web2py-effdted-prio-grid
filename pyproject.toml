@@ -77,6 +77,18 @@ all = [
   "typing",
 ]
 
+[tool.semantic_release]
+branch = "master"
+version_variable = "src/edwh_demo_plugin/__about__.py:__version__"
+change_log = "CHANGELOG.md"
+upload_to_repository = false
+upload_to_release = false
+build_command = "hatch build"
+
+parser_angular_minor_types = "feat,minor"
+parser_angular_patch_types = "fix,perf,refactor,build,chore,patch"
+
+
 [tool.black]
 target-version = ["py37"]
 line-length = 120
