@@ -79,7 +79,7 @@ all = [
 
 [tool.semantic_release]
 branch = "master"
-version_variable = "src/edwh_demo_plugin/__about__.py:__version__"
+version_variable = "src/edwh_web2py_effdted_prio_grid/__about__.py:__version__"
 change_log = "CHANGELOG.md"
 upload_to_repository = false
 upload_to_release = false
