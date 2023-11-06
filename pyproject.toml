@@ -27,9 +27,9 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Documentation = "https://github.com/unknown/edwh-web2py-effdted-prio-grid#readme"
-Issues = "https://github.com/unknown/edwh-web2py-effdted-prio-grid/issues"
-Source = "https://github.com/unknown/edwh-web2py-effdted-prio-grid"
+Documentation = "https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid#readme"
+Issues = "https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/issues"
+Source = "https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid"
 
 [tool.hatch.version]
 path = "src/edwh_web2py_effdted_prio_grid/__about__.py"
