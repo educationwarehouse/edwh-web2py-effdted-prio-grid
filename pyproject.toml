@@ -24,7 +24,9 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = []
+dependencies = ["web2py-gluon"]
+[project.optional-dependencies]
+dev = ["hatch", "python-semantic-release<8"]
 
 [project.urls]
 Documentation = "https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid#readme"
