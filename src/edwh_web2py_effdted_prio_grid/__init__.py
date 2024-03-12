@@ -1,21 +1,36 @@
 # SPDX-FileCopyrightText: 2023-present Remco Boerma <remco.b@educationwarehouse.nl>
 #
 # SPDX-License-Identifier: MIT
+import typing
+from typing import Optional
 
 from gluon import current, redirect, URL
+from gluon.html import DIV, A, SPAN, XML, TAG
 from gluon.sqlhtml import SQLFORM
-from gluon.html import DIV, A, SPAN, XML, BR, TAG
+from pydal import DAL
+from pydal.objects import Table, Query, Field
+import uuid
 
 
-def hide(field):
+def hide(field: Field):
     """Sets a field to be not readable or writable, returns the field for chaining."""
     field.readable = False
     field.writable = False
     return field
 
 
+class EffectiveDatedTable(Table):
+    """
+    An effective dated table should have at least these columns:
+    """
+    id: Field
+    effdt: Field
+    effstatus: Field
+    prio: Field
+
+
 def effective_dated_grid(
-    table, keyfieldname: str = "key", query=None, use_prio=False, **kwp
+        table: EffectiveDatedTable, keyfieldname: str = "key", query: Optional[Query] = None, use_prio=False, **kwp
 ):
     """This function creates an effective dated grid, which allows for multiple rows with the same key, but only
     one active row per key. The active row is the one with the latest effective date <= now. The grid allows for
@@ -35,6 +50,7 @@ def effective_dated_grid(
     and the max effective date <= now and effstatus = True. (so the most recent row within the highest priority)
     """
     # setup()
+    db: DAL
     # read parameters
     request = current.request
     auth = current.globalenv["auth"]
@@ -112,7 +128,7 @@ def effective_dated_grid(
             key_prio_effdt_alias = table.with_alias("key_prio_effdt")
             key_prio_combination = table[keyfieldname] + "." + table.prio
             key_prio_effdt_combination = (
-                table[keyfieldname] + "." + table.prio + "." + table.effdt
+                    table[keyfieldname] + "." + table.prio + "." + table.effdt
             )
             key_prio_subselect = key_prio_combination.belongs(
                 db(key_prio_alias[keyfieldname] == table[keyfieldname])._select(
@@ -149,7 +165,7 @@ def effective_dated_grid(
             query &= table.effdt.belongs(subselect)
         # and in this case, make sure only active rows are visible
         query &= table.effstatus == True
-        parent_onvalidation = kwp.pop("onvalidation", None)
+        parent_onvalidation: typing.Callable[[typing.Any], None] | None = kwp.pop("onvalidation", None)
 
         def onvalidation(form):
             # this is the onvalidation routine that will be called when the user pushes the
@@ -166,8 +182,8 @@ def effective_dated_grid(
             if edit_cmd == "new":
                 # on create, make sure the key is unique and not copied.
                 if (
-                    db(table[keyfieldname] == form.vars[keyfieldname].strip()).count()
-                    > 0
+                        db(table[keyfieldname] == form.vars[keyfieldname].strip()).count()
+                        > 0
                 ):
                     form.errors[keyfieldname] = f"Key is already in use."
             elif edit_cmd == "edit":
@@ -189,8 +205,10 @@ def effective_dated_grid(
                     values["last_saved_by"] = auth.user.email
                 if "last_saved_when" in values:
                     values["last_saved_when"] = request.now
-                table.insert(**values)
-                return redirect(URL())
+
+                if not form.errors:
+                    table.insert(**values)
+                    return redirect(URL())
 
         def delete_button(id):
             # since no onvalidation routine is called on delete, we have to write our own handler and button for it.
@@ -205,8 +223,8 @@ def effective_dated_grid(
 
         # add the delete link, and any links the user might have added
         links = [
-            dict(header="Delete", body=lambda row: delete_button(row.id))
-        ] + kwp.pop("links", [])
+                    dict(header="Delete", body=lambda row: delete_button(row.id))
+                ] + kwp.pop("links", [])
 
         # create the grid with our own onvalidation routine, and the delete button
         # and the links the user might have added. the args are used to pass the

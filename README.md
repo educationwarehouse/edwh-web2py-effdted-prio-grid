@@ -16,6 +16,14 @@
 pip install edwh-web2py-effdted-prio-grid
 ```
 
+## Usage
+```python
+from edwh_web2py_effdted_prio_grid import effective_dated_grid
+
+effective_dated_grid(db.organisations)
+
+```
+
 ## License
 
 `edwh-web2py-effdted-prio-grid` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
