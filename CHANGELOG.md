@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.1.2 (2024-03-12)
+
+### Fix
+
+* If the form has errors, don't save it. + added typing hints ([`197371a`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/197371a7115a27099b376ba0aafd26a26a11fe5c))
+
 ## v0.1.1 (2023-11-08)
 
 ### Fix
