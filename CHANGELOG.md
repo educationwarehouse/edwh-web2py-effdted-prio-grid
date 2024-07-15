@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.2.0 (2024-07-15)
+
+### Feature
+
+* By default, use custom searchable which deals with uuid fields in the db ([`38bbbba`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/38bbbbac8be7b68c103c974a695744e9afe41236))
+
 ## v0.1.2 (2024-03-12)
 
 ### Fix
