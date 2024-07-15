@@ -2,14 +2,14 @@
 #
 # SPDX-License-Identifier: MIT
 import typing
+import uuid
 from typing import Optional
 
-from gluon import current, redirect, URL
-from gluon.html import DIV, A, SPAN, XML, TAG
+from gluon import URL, current, redirect
+from gluon.html import DIV, SPAN, TAG, XML, A
 from gluon.sqlhtml import SQLFORM
 from pydal import DAL
-from pydal.objects import Table, Query, Field
-import uuid
+from pydal.objects import Field, Query, Table
 
 
 def hide(field: Field):
@@ -19,10 +19,88 @@ def hide(field: Field):
     return field
 
 
+def is_uuid(value: str) -> bool:
+    """
+    Returns whether 'value' is a valid uuid
+    """
+    try:
+        uuid.UUID(value)
+        return True
+    except ValueError:
+        return False
+
+
+def get_actual_column_type(field: Field) -> str | None:
+    """
+    Execute a raw SQL query to get the column type from PostgreSQL's information schema
+    """
+    database = field._db
+
+    table_name = field._table._rname
+    field_name = field._rname.strip('"')
+
+    # works on tables only:
+    # row = database.executesql(
+    #     """
+    #     SELECT data_type
+    #     FROM information_schema.columns
+    #     WHERE table_name = %s AND column_name = %s;
+    # """,
+    #     (table_name, field_name),
+    #     colnames=["data_type"],
+    # ).first()
+
+    # works on tables and mat. views:
+    row = database.executesql(
+        """
+           SELECT 
+               CASE
+                   WHEN c.relkind IN ('r', 'v', 'm') THEN format_type(a.atttypid, a.atttypmod)
+                   ELSE 'unknown'
+               END AS data_type
+           FROM pg_attribute a
+           JOIN pg_class c ON a.attrelid = c.oid
+           JOIN pg_namespace n ON c.relnamespace = n.oid
+           WHERE (c.relkind = 'r' OR c.relkind = 'v' OR c.relkind = 'm')
+           AND c.relname = %s 
+           AND a.attname = %s
+           AND n.nspname = 'public';  -- You may need to adjust the schema name if different
+       """,
+        (table_name, field_name),
+        colnames=["data_type"],
+    ).first()
+
+    # Return the data type
+    return getattr(row, "data_type", None)
+
+
+def custom_searchable(sfields: list[Field], keywords: str):
+    """
+    Variant of the default searchable logic, but this takes into account uuid fields.
+    """
+    filtered_sfields = []
+    uuid_sfields = []
+
+    for field in sfields:
+        if get_actual_column_type(field) == "uuid":
+            uuid_sfields.append(field)
+        else:
+            filtered_sfields.append(field)
+
+    query = SQLFORM.build_query(filtered_sfields, keywords)
+    if is_uuid(keywords):
+        # uuid only works with exact match, not contains.
+        for field in uuid_sfields:
+            query |= field == keywords
+
+    return query
+
+
 class EffectiveDatedTable(Table):
     """
     An effective dated table should have at least these columns:
     """
+
     id: Field
     effdt: Field
     effstatus: Field
@@ -30,7 +108,7 @@ class EffectiveDatedTable(Table):
 
 
 def effective_dated_grid(
-        table: EffectiveDatedTable, keyfieldname: str = "key", query: Optional[Query] = None, use_prio=False, **kwp
+    table: EffectiveDatedTable, keyfieldname: str = "key", query: Optional[Query] = None, use_prio=False, **kwp
 ):
     """This function creates an effective dated grid, which allows for multiple rows with the same key, but only
     one active row per key. The active row is the one with the latest effective date <= now. The grid allows for
@@ -57,7 +135,9 @@ def effective_dated_grid(
     show_archive = bool(request.args and request.args[0] == "archive")
     show_all = bool(request.args and request.args[0] == "all")
     on_delete = bool(request.args and request.args[0] == "ondelete")
-    show_clean = len(request.args) == 0
+    # show_clean = len(request.args) == 0
+
+    kwp.setdefault("searchable", custom_searchable)
 
     # clean the optional 'archive_fields' key from kwp
     archive_fields = kwp.pop("archive_fields") if "archive_fields" in kwp else []
@@ -97,9 +177,7 @@ def effective_dated_grid(
         kwp.pop("editable", None)
         kwp.pop("deletable", None)
         kwp.pop("user_signature", None)
-        kwp.pop(
-            "left", None
-        )  # if tag is coming from kwp, it will ruin our query because of a carthesian product
+        kwp.pop("left", None)  # if tag is coming from kwp, it will ruin our query because of a carthesian product
         grid = SQLFORM.grid(
             table,
             # fields=archive_fields,
@@ -127,9 +205,7 @@ def effective_dated_grid(
             key_prio_alias = table.with_alias("key_prio")
             key_prio_effdt_alias = table.with_alias("key_prio_effdt")
             key_prio_combination = table[keyfieldname] + "." + table.prio
-            key_prio_effdt_combination = (
-                    table[keyfieldname] + "." + table.prio + "." + table.effdt
-            )
+            key_prio_effdt_combination = table[keyfieldname] + "." + table.prio + "." + table.effdt
             key_prio_subselect = key_prio_combination.belongs(
                 db(key_prio_alias[keyfieldname] == table[keyfieldname])._select(
                     key_prio_alias[keyfieldname] + "." + key_prio_alias.prio.max(),
@@ -158,10 +234,9 @@ def effective_dated_grid(
             query &= key_prio_effdt_subselect
         else:
             # not using prio
-            subselect = db(
-                (d_ed.effdt <= request.now)
-                & (d_ed[keyfieldname] == table[keyfieldname])
-            )._select(d_ed.effdt.max(), outer_scoped=[str(table)])
+            subselect = db((d_ed.effdt <= request.now) & (d_ed[keyfieldname] == table[keyfieldname]))._select(
+                d_ed.effdt.max(), outer_scoped=[str(table)]
+            )
             query &= table.effdt.belongs(subselect)
         # and in this case, make sure only active rows are visible
         query &= table.effstatus == True
@@ -181,10 +256,7 @@ def effective_dated_grid(
             edit_cmd = request.args[1] if show_archive else request.args[0]
             if edit_cmd == "new":
                 # on create, make sure the key is unique and not copied.
-                if (
-                        db(table[keyfieldname] == form.vars[keyfieldname].strip()).count()
-                        > 0
-                ):
+                if db(table[keyfieldname] == form.vars[keyfieldname].strip()).count() > 0:
                     form.errors[keyfieldname] = f"Key is already in use."
             elif edit_cmd == "edit":
                 # on edit, create a copy of the current row, remove the id field because
@@ -222,9 +294,7 @@ def effective_dated_grid(
             )
 
         # add the delete link, and any links the user might have added
-        links = [
-                    dict(header="Delete", body=lambda row: delete_button(row.id))
-                ] + kwp.pop("links", [])
+        links = [dict(header="Delete", body=lambda row: delete_button(row.id))] + kwp.pop("links", [])
 
         # create the grid with our own onvalidation routine, and the delete button
         # and the links the user might have added. the args are used to pass the
@@ -271,18 +341,10 @@ def effective_dated_grid(
     if show_archive:
         keyfield = getattr(table, keyfieldname)
         current_record = table[request.args[-1]]
-        htable = db(keyfield == current_record[keyfieldname]).select(
-            *archive_fields, orderby=~table.effdt
-        )
+        htable = db(keyfield == current_record[keyfieldname]).select(*archive_fields, orderby=~table.effdt)
         # filter out the fields that have different values
-        changed_fields = [
-            field
-            for field in archive_fields
-            if len(set([row[field] for row in htable])) > 1
-        ]
-        htable = db(keyfield == current_record[keyfieldname]).select(
-            *changed_fields, orderby=~table.effdt
-        )
+        changed_fields = [field for field in archive_fields if len(set([row[field] for row in htable])) > 1]
+        htable = db(keyfield == current_record[keyfieldname]).select(*changed_fields, orderby=~table.effdt)
         # convert the table to a serverside dom queryable XML object
         htable = TAG(htable.xml().decode("utf-8"))
 
