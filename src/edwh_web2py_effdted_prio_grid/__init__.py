@@ -53,7 +53,7 @@ def get_actual_column_type(field: Field) -> str | None:
     # works on tables and mat. views:
     row = database.executesql(
         """
-           SELECT 
+           SELECT
                CASE
                    WHEN c.relkind IN ('r', 'v', 'm') THEN format_type(a.atttypid, a.atttypmod)
                    ELSE 'unknown'
@@ -62,9 +62,10 @@ def get_actual_column_type(field: Field) -> str | None:
            JOIN pg_class c ON a.attrelid = c.oid
            JOIN pg_namespace n ON c.relnamespace = n.oid
            WHERE (c.relkind = 'r' OR c.relkind = 'v' OR c.relkind = 'm')
-           AND c.relname = %s 
+           AND c.relname = %s
            AND a.attname = %s
-           AND n.nspname = 'public';  -- You may need to adjust the schema name if different
+           -- AND n.nspname = 'public'
+           ;
        """,
         (table_name, field_name),
         colnames=["data_type"],
@@ -74,15 +75,66 @@ def get_actual_column_type(field: Field) -> str | None:
     return getattr(row, "data_type", None)
 
 
-def custom_searchable(sfields: list[Field], keywords: str):
+def get_actual_column_types(fields: list[Field]) -> dict[Field, str | None]:
     """
-    Variant of the default searchable logic, but this takes into account uuid fields.
+    Execute a raw SQL query to get the column types from PostgreSQL's pg_catalog
     """
+
+    # Extract database object from the first field
+    if fields:
+        database = fields[0]._db
+    else:
+        return {}
+
+    # Collect table and field names
+    table_names = [field._table._rname for field in fields]
+    field_names = [field._rname.strip('"') for field in fields]
+
+    # Construct query to get column types for all fields
+    query = """
+        SELECT
+            c.relname AS table_name,
+            a.attname AS column_name,
+            CASE
+                WHEN c.relkind IN ('r', 'v', 'm') THEN format_type(a.atttypid, a.atttypmod)
+                ELSE 'unknown'
+            END AS data_type
+        FROM pg_attribute a
+        JOIN pg_class c ON a.attrelid = c.oid
+        JOIN pg_namespace n ON c.relnamespace = n.oid
+        WHERE (c.relkind = 'r' OR c.relkind = 'v' OR c.relkind = 'm')
+        AND c.relname IN %s
+        AND a.attname IN %s
+    """
+
+    # Execute the query
+    rows = database.executesql(query, (tuple(table_names), tuple(field_names)), as_dict=True)
+
+    # Create a dictionary to store the results
+    result_dict = {(row["table_name"], row["column_name"]): row["data_type"] for row in rows}
+
+    # Prepare a dictionary with field names and their data types
+    field_types = {}
+    for field in fields:
+        table_name = field._table._rname
+        field_name = field._rname.strip('"')
+        field_types[field] = result_dict.get((table_name, field_name), None)
+
+    return field_types
+
+
+def custom_searchable(sfields: list[Field], keywords: str) -> Query:
     filtered_sfields = []
     uuid_sfields = []
 
+    column_types = get_actual_column_types(sfields)
+
     for field in sfields:
-        if get_actual_column_type(field) == "uuid":
+        column_type = column_types.get(field)
+        if column_type is None:
+            # missing field, skip in search
+            continue
+        elif column_type == "uuid":
             uuid_sfields.append(field)
         else:
             filtered_sfields.append(field)
@@ -108,7 +160,7 @@ class EffectiveDatedTable(Table):
 
 
 def effective_dated_grid(
-    table: EffectiveDatedTable, keyfieldname: str = "key", query: Optional[Query] = None, use_prio=False, **kwp
+    table: EffectiveDatedTable, keyfieldname: str = "key", query: Optional[Query] = None, use_prio: bool = False, **kwp
 ):
     """This function creates an effective dated grid, which allows for multiple rows with the same key, but only
     one active row per key. The active row is the one with the latest effective date <= now. The grid allows for
@@ -257,7 +309,7 @@ def effective_dated_grid(
             if edit_cmd == "new":
                 # on create, make sure the key is unique and not copied.
                 if db(table[keyfieldname] == form.vars[keyfieldname].strip()).count() > 0:
-                    form.errors[keyfieldname] = f"Key is already in use."
+                    form.errors[keyfieldname] = "Key is already in use."
             elif edit_cmd == "edit":
                 # on edit, create a copy of the current row, remove the id field because
                 # it will be repopulated for the new row, apply the current effective date
@@ -267,7 +319,7 @@ def effective_dated_grid(
                 values.update(form.vars)
                 del values["id"]
                 values["effdt"] = request.now
-                if use_prio != False:
+                if use_prio is not False:
                     values["prio"] = use_prio
                 if "sync_gid" in values:
                     # if a sync_gid column exists, it should be populated with a new gid for
@@ -282,19 +334,19 @@ def effective_dated_grid(
                     table.insert(**values)
                     return redirect(URL())
 
-        def delete_button(id):
+        def delete_button(idx):
             # since no onvalidation routine is called on delete, we have to write our own handler and button for it.
             # here's the button.
             return A(
                 SPAN(_class="icon trash icon-trash glyphicon glyphicon-trash"),
                 XML("&nbsp;"),
                 SPAN("Delete", _class="buttontext button"),
-                _href=URL(args=["ondelete", id]),
+                _href=URL(args=["ondelete", idx]),
                 _class="button btn btn-default btn-secondary",
             )
 
         # add the delete link, and any links the user might have added
-        links = [dict(header="Delete", body=lambda row: delete_button(row.id))] + kwp.pop("links", [])
+        links = [{"header": "Delete", "body": lambda row: delete_button(row.id)}, *kwp.pop("links", [])]
 
         # create the grid with our own onvalidation routine, and the delete button
         # and the links the user might have added. the args are used to pass the
@@ -322,7 +374,7 @@ def effective_dated_grid(
     else:
         # in every other case add the 'archive' to the args to show the archive
         # for edit or view screens
-        button_args = ["archive"] + request.args
+        button_args = ["archive", *request.args]
 
     # add a button to toggle between the archive and the active data
     archive_button = A(
@@ -343,7 +395,7 @@ def effective_dated_grid(
         current_record = table[request.args[-1]]
         htable = db(keyfield == current_record[keyfieldname]).select(*archive_fields, orderby=~table.effdt)
         # filter out the fields that have different values
-        changed_fields = [field for field in archive_fields if len(set([row[field] for row in htable])) > 1]
+        changed_fields = [field for field in archive_fields if len({[row[field] for row in htable]}) > 1]
         htable = db(keyfield == current_record[keyfieldname]).select(*changed_fields, orderby=~table.effdt)
         # convert the table to a serverside dom queryable XML object
         htable = TAG(htable.xml().decode("utf-8"))
