@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.2.1 (2024-08-23)
+
+### Fix
+
+* **archive:** Set([...]) is anders dan {[...]} ([`d0f9396`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/d0f93965c040e11e59d13a3c518d087f886e2eaf))
+
 ## v0.2.0 (2024-07-15)
 
 ### Feature
