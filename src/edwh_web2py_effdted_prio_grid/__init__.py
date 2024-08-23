@@ -395,7 +395,7 @@ def effective_dated_grid(
         current_record = table[request.args[-1]]
         htable = db(keyfield == current_record[keyfieldname]).select(*archive_fields, orderby=~table.effdt)
         # filter out the fields that have different values
-        changed_fields = [field for field in archive_fields if len({[row[field] for row in htable]}) > 1]
+        changed_fields = [field for field in archive_fields if len({row[field] for row in htable}) > 1]
         htable = db(keyfield == current_record[keyfieldname]).select(*changed_fields, orderby=~table.effdt)
         # convert the table to a serverside dom queryable XML object
         htable = TAG(htable.xml().decode("utf-8"))
