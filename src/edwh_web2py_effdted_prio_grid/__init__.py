@@ -188,7 +188,9 @@ def effective_dated_grid(
     show_all = bool(request.args and request.args[0] == "all")
     on_delete = bool(request.args and request.args[0] == "ondelete")
     # show_clean = len(request.args) == 0
-    deletable = kwp.pop("deletable", None)
+
+    if not (deletable := kwp.pop("deletable", None)):
+        table.effstatus.writable = False
 
     kwp.setdefault("searchable", custom_searchable)
 
@@ -316,8 +318,11 @@ def effective_dated_grid(
                 # and insert the row. The redirect(URL()) will reload the page, showing the new data
                 # without the regular grid handling the edit.
                 values = table[request.args[-1]].as_dict()
+                old_values = values.copy()
                 values.update(form.vars)
+
                 del values["id"]
+                values["effstatus"] = bool(form.vars.get("effstatus")) if deletable else old_values["effstatus"]
                 values["effdt"] = request.now
                 if use_prio is not False:
                     values["prio"] = use_prio
