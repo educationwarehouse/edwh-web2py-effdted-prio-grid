@@ -180,12 +180,13 @@ def effective_dated_grid(
     and the max effective date <= now and effstatus = True. (so the most recent row within the highest priority)
     """
     # setup()
-    db: DAL
+    db: DAL = table._db
     # read parameters
     request = current.request
     auth = current.globalenv["auth"]
     show_archive = bool(request.args and request.args[0] == "archive")
     show_all = bool(request.args and request.args[0] == "all")
+    restore = bool(request.args and len(request.args) >= 2 and request.args[0] == "restore")
     on_delete = bool(request.args and request.args[0] == "ondelete")
     # show_clean = len(request.args) == 0
 
@@ -241,16 +242,27 @@ def effective_dated_grid(
             args=edg_args,
             # **kwp,
             user_signature=False,
+            links=[lambda row: A(BUTTON("Restore"), _href=URL(args=["restore", row.id]))],
         )
+    elif restore:
+        row_id = request.args[1]
+        values = db(table.id == row_id).select().first().as_dict()
+        values["effstatus"] = True
+        values["effdt"] = request.now
+        values["last_saved_by"] = auth.user.email
+        del values["id"]
+        new_id = table.insert(**values)
+        # https://web2py.dockers.local/organisations/index/edit/35109
+        # https://web2py.dockers.local/organisations/index/edit/organisation/35109
+        raise redirect(URL(args=["edit", table, new_id]))
     else:
         # create the effective dated query
         # start with the with query given by the developer, or default ot a simple one
-        query = query if query else (table.id > 0)
+        query = query or (table.id > 0)
         # next apply the effective dated subquery
         d_ed = table.with_alias("d_ed")
 
         # get the database connection from the table object:
-        db = table._db
         # this subquery will return the max(effdt) for each key bound to the outer query
         # based on d_ed.key == table.key. The outer_scoped=[str(table)] is required to
         # make sure the outer query is bound to the subquery.
@@ -354,9 +366,7 @@ def effective_dated_grid(
         # add the delete link, and any links the user might have added
         links = kwp.pop("links", [])
         if deletable:
-            links.insert(0,
-                {"header": "Delete", "body": lambda row: delete_button(row.id)}
-            )
+            links.insert(0, {"header": "Delete", "body": lambda row: delete_button(row.id)})
 
         # create the grid with our own onvalidation routine, and the delete button
         # and the links the user might have added. the args are used to pass the
@@ -434,6 +444,7 @@ def effective_dated_grid(
         )
     else:
         historic_table = ""
+
     grid_and_buttons = DIV(
         DIV(archive_button),
         DIV(historic_table),
