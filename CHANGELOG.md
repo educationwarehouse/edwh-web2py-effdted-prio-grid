@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.3.0 (2024-08-26)
+
+### Feature
+
+* Add 'restore' option to archive ([`7ed3e7b`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/7ed3e7b3a10868bda97f2bca603e00cf711c5284))
+
 ## v0.2.4 (2024-08-26)
 
 ### Fix
