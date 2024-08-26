@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.2.3 (2024-08-26)
+
+### Fix
+
+* Confirm with user before deleting something ([`f75c03c`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/f75c03c22f996822cba0039c660e24165a4a9fda))
+
 ## v0.2.2 (2024-08-26)
 
 ### Fix
