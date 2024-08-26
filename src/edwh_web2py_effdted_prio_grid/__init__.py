@@ -407,8 +407,11 @@ def effective_dated_grid(
         # stript the `organisation.` from the table headers and replace them with the
         # label from the table definition
         for th in htable.elements("th"):
-            th[0] = th[0].replace(b"organisation.", b"")
-            th[0] = table[th[0].decode("utf-8")].label
+            # th: <th>board.id</th>
+            # th[0]: board.id
+            table_field: str = th[0].decode()
+            field = table_field.split(".")[-1]
+            th[0] = field.encode()
 
         # color the cells that have a different value than the cell below
         rows = htable.elements("tr")
