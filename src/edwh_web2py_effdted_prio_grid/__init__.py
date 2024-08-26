@@ -188,6 +188,7 @@ def effective_dated_grid(
     show_all = bool(request.args and request.args[0] == "all")
     on_delete = bool(request.args and request.args[0] == "ondelete")
     # show_clean = len(request.args) == 0
+    deletable = kwp.pop("deletable", None)
 
     kwp.setdefault("searchable", custom_searchable)
 
@@ -227,7 +228,6 @@ def effective_dated_grid(
         kwp.pop("fields", None)
         kwp.pop("create", None)
         kwp.pop("editable", None)
-        kwp.pop("deletable", None)
         kwp.pop("user_signature", None)
         kwp.pop("left", None)  # if tag is coming from kwp, it will ruin our query because of a carthesian product
         grid = SQLFORM.grid(
@@ -346,7 +346,11 @@ def effective_dated_grid(
             )
 
         # add the delete link, and any links the user might have added
-        links = [{"header": "Delete", "body": lambda row: delete_button(row.id)}, *kwp.pop("links", [])]
+        links = kwp.pop("links", [])
+        if deletable:
+            links.insert(0,
+                {"header": "Delete", "body": lambda row: delete_button(row.id)}
+            )
 
         # create the grid with our own onvalidation routine, and the delete button
         # and the links the user might have added. the args are used to pass the
