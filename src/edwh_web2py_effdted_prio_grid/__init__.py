@@ -342,6 +342,7 @@ def effective_dated_grid(
                 XML("&nbsp;"),
                 SPAN("Delete", _class="buttontext button"),
                 _href=URL(args=["ondelete", idx]),
+                _onclick="return confirm('Are you sure you want to delete this?')",
                 _class="button btn btn-default btn-secondary",
             )
 
