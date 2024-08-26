@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.2.4 (2024-08-26)
+
+### Fix
+
+* Effstatus was set to None after update ([`0273ac2`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/0273ac26fb19dbcc111df9a28758d9d051279112))
+
 ## v0.2.3 (2024-08-26)
 
 ### Fix
