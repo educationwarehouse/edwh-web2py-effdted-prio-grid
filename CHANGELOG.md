@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.3.1 (2024-08-26)
+
+### Fix
+
+* Import BUTTON from yatl ([`bfd4671`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/bfd46713f9611ca54e6d4ac5ee64505a6c765cf6))
+
 ## v0.3.0 (2024-08-26)
 
 ### Feature
