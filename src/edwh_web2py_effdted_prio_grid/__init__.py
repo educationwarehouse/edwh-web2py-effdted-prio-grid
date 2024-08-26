@@ -6,7 +6,7 @@ import uuid
 from typing import Optional
 
 from gluon import URL, current, redirect
-from gluon.html import DIV, SPAN, TAG, XML, A
+from gluon.html import DIV, SPAN, TAG, XML, A, BUTTON
 from gluon.sqlhtml import SQLFORM
 from pydal import DAL
 from pydal.objects import Field, Query, Table
