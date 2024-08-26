@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v0.2.2 (2024-08-26)
+
+### Fix
+
+* Don't hardcode on 'organisations' table ([`e2f468d`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/e2f468dd4ee92114b1033ce948da68f19b5c5657))
+* Don't crash when 'deletable' argument is passed, just hide the delete button in that case ([`ab22727`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/ab22727e166ec1058140c3a7a03801745e0bd117))
+
 ## v0.2.1 (2024-08-23)
 
 ### Fix
