@@ -335,7 +335,7 @@ def effective_dated_grid(
             edit_cmd = request.args[1] if show_archive else request.args[0]
             if edit_cmd == "new":
                 # on create, make sure the key is unique and not copied.
-                if db(table[keyfieldname] == form.vars[keyfieldname].strip()).count() > 0:
+                if form.vars.get(keyfieldname) and db(table[keyfieldname] == form.vars[keyfieldname].strip()).count() > 0:
                     form.errors[keyfieldname] = "Key is already in use."
             elif edit_cmd == "edit":
                 # on edit, create a copy of the current row, remove the id field because
