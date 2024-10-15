@@ -6,7 +6,7 @@ import uuid
 from typing import Optional
 
 from gluon import URL, current, redirect
-from gluon.html import DIV, SPAN, TAG, XML, A, BUTTON
+from gluon.html import BUTTON, DIV, SPAN, TAG, XML, A
 from gluon.sqlhtml import SQLFORM
 from pydal import DAL
 from pydal.objects import Field, Query, Table
@@ -160,7 +160,11 @@ class EffectiveDatedTable(Table):
 
 
 def effective_dated_grid(
-    table: EffectiveDatedTable, keyfieldname: str = "key", query: Optional[Query] = None, use_prio: bool = False, **kwp
+    table: EffectiveDatedTable,
+    keyfieldname: str = "key",
+    query: Optional[Query] = None,
+    use_prio: bool = False,
+    **kwp,
 ):
     """This function creates an effective dated grid, which allows for multiple rows with the same key, but only
     one active row per key. The active row is the one with the latest effective date <= now. The grid allows for
@@ -172,6 +176,8 @@ def effective_dated_grid(
 
     The grid will also show all rows with an effstatus of False,
     but will not allow for editing or deleting them.
+
+    You can provide a list of fields to remove before insert (e.g. 'sync_gid' via pop_fields=[])
 
     kwp can be used to pass in any of the parameters used by SQLFORM.grid, with the exception of
     deletable, editable, and create. These are set by the function.
@@ -189,6 +195,7 @@ def effective_dated_grid(
     restore = bool(request.args and len(request.args) >= 2 and request.args[0] == "restore")
     on_delete = bool(request.args and request.args[0] == "ondelete")
     # show_clean = len(request.args) == 0
+    pop_fields = kwp.pop("pop_fields") or []
 
     if not (deletable := kwp.pop("deletable", None)):
         table.effstatus.writable = False
@@ -222,8 +229,11 @@ def effective_dated_grid(
         del values["id"]
         values["effdt"] = request.now
         values["effstatus"] = False
+        for field in pop_fields:
+            values.pop(field, None)
+
         table.insert(**values)
-        redirect(URL())
+        return redirect(URL())
 
     if show_all:
         # if the user wants to see the archive, just show the grid
@@ -251,6 +261,9 @@ def effective_dated_grid(
         values["effdt"] = request.now
         values["last_saved_by"] = auth.user.email
         del values["id"]
+        for field in pop_fields:
+            values.pop(field, None)
+
         new_id = table.insert(**values)
         # https://web2py.dockers.local/organisations/index/edit/35109
         # https://web2py.dockers.local/organisations/index/edit/organisation/35109
@@ -338,14 +351,13 @@ def effective_dated_grid(
                 values["effdt"] = request.now
                 if use_prio is not False:
                     values["prio"] = use_prio
-                if "sync_gid" in values:
-                    # if a sync_gid column exists, it should be populated with a new gid for
-                    # every row to allow syncing between multiple sources.
-                    values["sync_gid"] = uuid.uuid4()
                 if "last_saved_by" in values:
                     values["last_saved_by"] = auth.user.email
                 if "last_saved_when" in values:
                     values["last_saved_when"] = request.now
+
+                for field in pop_fields:
+                    values.pop(field, None)
 
                 if not form.errors:
                     table.insert(**values)
