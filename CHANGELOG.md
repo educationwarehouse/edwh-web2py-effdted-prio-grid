@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.1 (2024-10-15)
+
+### Fix
+
+* `keyfieldname` is not always passed in the form on new! ([`95cfd27`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/95cfd27cb1844b6adefaf169ad85ac9a5af8e4bc))
+
 ## v0.4.0 (2024-10-15)
 
 ### Feature
