@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.0 (2024-10-15)
+
+### Feature
+
+* **grid:** Allow specifying `pop_fields` to remove certain values when copying a row (e.g. sync_gid) ([`bf87024`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/bf870246cbb78a6bdd3009bf9402135515dedae8))
+
 ## v0.3.1 (2024-08-26)
 
 ### Fix
