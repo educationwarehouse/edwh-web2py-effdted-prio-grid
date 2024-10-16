@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.2 (2024-10-16)
+
+### Fix
+
+* Explicit db.commit's after insert ([`4fb41b1`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/4fb41b145cfcecc4b272c4d197bf295b54a5df7f))
+
 ## v0.4.1 (2024-10-15)
 
 ### Fix
