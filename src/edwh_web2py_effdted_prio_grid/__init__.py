@@ -161,7 +161,7 @@ class EffectiveDatedTable(Table):
 
 def effective_dated_grid(
     table: EffectiveDatedTable,
-    keyfieldname: str = "key",
+    keyfieldname: str = "gid",
     query: Optional[Query] = None,
     use_prio: bool = False,
     **kwp,
@@ -233,6 +233,7 @@ def effective_dated_grid(
             values.pop(field, None)
 
         table.insert(**values)
+        db.commit()
         return redirect(URL())
 
     if show_all:
@@ -265,6 +266,7 @@ def effective_dated_grid(
             values.pop(field, None)
 
         new_id = table.insert(**values)
+        db.commit()
         # https://web2py.dockers.local/organisations/index/edit/35109
         # https://web2py.dockers.local/organisations/index/edit/organisation/35109
         raise redirect(URL(args=["edit", table, new_id]))
@@ -361,6 +363,7 @@ def effective_dated_grid(
 
                 if not form.errors:
                     table.insert(**values)
+                    db.commit()
                     return redirect(URL())
 
         def delete_button(idx):
