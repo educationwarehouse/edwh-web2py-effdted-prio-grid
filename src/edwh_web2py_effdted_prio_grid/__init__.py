@@ -19,6 +19,23 @@ def hide(field: Field):
     return field
 
 
+def show(table: Table, *fields_to_show: Field | str):
+    """
+    sets 'readable' and 'writable' to False for fields that are not in fields_to_show
+
+    :param table: table name that is being shown in the form
+    :param fields_to_show: fields that you want to show in the form
+    """
+    # Get all field names from the table
+    all_fields = [field.name for field in table]
+    fields_to_show = set(str(getattr(_, "name", _)) for _ in fields_to_show)
+
+    # Set 'readable' and 'writable' to False for fields that are not in fields_to_show
+    for field in all_fields:
+        if field not in fields_to_show:
+            hide(field)
+
+
 def is_uuid(value: str) -> bool:
     """
     Returns whether 'value' is a valid uuid
@@ -337,7 +354,10 @@ def effective_dated_grid(
             edit_cmd = request.args[1] if show_archive else request.args[0]
             if edit_cmd == "new":
                 # on create, make sure the key is unique and not copied.
-                if form.vars.get(keyfieldname) and db(table[keyfieldname] == form.vars[keyfieldname].strip()).count() > 0:
+                if (
+                    form.vars.get(keyfieldname)
+                    and db(table[keyfieldname] == form.vars[keyfieldname].strip()).count() > 0
+                ):
                     form.errors[keyfieldname] = "Key is already in use."
             elif edit_cmd == "edit":
                 # on edit, create a copy of the current row, remove the id field because
