@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.0 (2024-10-28)
+
+### Feature
+
+* Add 'show' as the inverse of 'hide' ([`8c727d8`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/8c727d8688a8ef2bd3509013f6d8647fd78f2e9c))
+
 ## v0.4.3 (2024-10-28)
 
 ### Fix
