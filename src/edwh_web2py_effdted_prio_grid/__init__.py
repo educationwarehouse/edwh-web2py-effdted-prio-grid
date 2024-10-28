@@ -195,7 +195,7 @@ def effective_dated_grid(
     restore = bool(request.args and len(request.args) >= 2 and request.args[0] == "restore")
     on_delete = bool(request.args and request.args[0] == "ondelete")
     # show_clean = len(request.args) == 0
-    pop_fields = kwp.pop("pop_fields") or []
+    pop_fields = kwp.pop("pop_fields", None) or []
 
     if not (deletable := kwp.pop("deletable", None)):
         table.effstatus.writable = False
