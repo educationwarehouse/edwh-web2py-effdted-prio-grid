@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.3 (2024-10-28)
+
+### Fix
+
+* Pop_fields should be optional ([`8cdb087`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/8cdb087dd4198d7e289369799babcb70cb10fee1))
+
 ## v0.4.2 (2024-10-16)
 
 ### Fix
