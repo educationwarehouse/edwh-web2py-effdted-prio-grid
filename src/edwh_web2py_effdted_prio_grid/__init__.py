@@ -33,7 +33,7 @@ def show(table: Table, *fields_to_show: Field | str):
     # Set 'readable' and 'writable' to False for fields that are not in fields_to_show
     for field in all_fields:
         if field not in fields_to_show:
-            hide(field)
+            hide(table[field])
 
 
 def is_uuid(value: str) -> bool:
