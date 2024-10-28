@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.1 (2024-10-28)
+
+### Fix
+
+* Use table[field] instead of just field ([`6d8d247`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/6d8d24703cc95e0978ef4be3194195336935a695))
+
 ## v0.5.0 (2024-10-28)
 
 ### Feature
