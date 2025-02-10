@@ -453,7 +453,9 @@ def effective_dated_grid(
         changed_fields = [field for field in archive_fields if len({row[field] for row in htable}) > 1]
         htable = db(keyfield == current_record[keyfieldname]).select(*changed_fields, orderby=~table.effdt)
         # convert the table to a serverside dom queryable XML object
-        htable = TAG(htable.xml().decode("utf-8"))
+        htable = htable.xml()
+        htable = htable.decode() if isinstance(htable, bytes) else htable
+        htable = TAG(htable)
 
         # stript the `organisation.` from the table headers and replace them with the
         # label from the table definition
