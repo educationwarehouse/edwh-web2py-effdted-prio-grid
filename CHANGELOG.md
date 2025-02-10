@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.2-beta.3 (2025-02-10)
+
+### Fix
+
+* Don't encode table headers, otherwise they show up as `b'id'` ([`04b6231`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/04b6231a10e9e1cb1e52f16ac3620ab9b0c7b401))
+
 ## v0.5.2-beta.2 (2025-02-10)
 
 ### Fix
