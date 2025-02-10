@@ -462,7 +462,8 @@ def effective_dated_grid(
         for th in htable.elements("th"):
             # th: <th>board.id</th>
             # th[0]: board.id
-            table_field: str = th[0].decode()
+            table_field = th[0]
+            table_field: str = table_field.decode() if isinstance(table_field, bytes) else table_field
             field = table_field.split(".")[-1]
             th[0] = field.encode()
 
