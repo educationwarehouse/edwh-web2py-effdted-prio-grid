@@ -3,26 +3,8 @@
 <!--next-version-placeholder-->
 
 ## v0.5.2 (2025-02-10)
-
-
-
-## v0.5.2-beta.3 (2025-02-10)
-
-### Fix
-
+* Only call .decode() if bytes are produced ([`ad53d36`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/ad53d3630cd8ccc745aa1df32faa7a21d6696024), ([`e4143fc`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/e4143fcab5bd7d635bd0f5cfe09d860cc251aebf))
 * Don't encode table headers, otherwise they show up as `b'id'` ([`04b6231`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/04b6231a10e9e1cb1e52f16ac3620ab9b0c7b401))
-
-## v0.5.2-beta.2 (2025-02-10)
-
-### Fix
-
-* Only call .decode() if bytes are produced ([`ad53d36`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/ad53d3630cd8ccc745aa1df32faa7a21d6696024))
-
-## v0.5.2-beta.1 (2025-02-10)
-
-### Fix
-
-* Only call .decode() if bytes are produced ([`e4143fc`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/e4143fcab5bd7d635bd0f5cfe09d860cc251aebf))
 
 ## v0.5.1 (2024-10-28)
 
