@@ -464,8 +464,7 @@ def effective_dated_grid(
             # th[0]: board.id
             table_field = th[0]
             table_field: str = table_field.decode() if isinstance(table_field, bytes) else table_field
-            field = table_field.split(".")[-1]
-            th[0] = field.encode()
+            th[0] = table_field.split(".")[-1] # without .encode
 
         # color the cells that have a different value than the cell below
         rows = htable.elements("tr")
