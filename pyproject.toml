@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = 'Web2py plugin for a effective dated grid with priority support.'
 readme = "README.md"
 requires-python = ">=3.10"
-license = "MIT"
+license-expression = "MIT"
 keywords = ['web2py', 'grid', 'effective-dated', 'effdt']
 authors = [
     { name = "Remco Boerma", email = "remco.b@educationwarehouse.nl" },
