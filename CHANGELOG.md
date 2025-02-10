@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.2-beta.1 (2025-02-10)
+
+### Fix
+
+* Only call .decode() if bytes are produced ([`e4143fc`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/e4143fcab5bd7d635bd0f5cfe09d860cc251aebf))
+
 ## v0.5.1 (2024-10-28)
 
 ### Fix
