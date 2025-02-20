@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.3 (2025-02-20)
+
+
+
 ## v0.5.3-beta.1 (2025-02-20)
 
 ### Fix
