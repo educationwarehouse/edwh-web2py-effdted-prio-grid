@@ -4,10 +4,6 @@
 
 ## v0.5.3 (2025-02-20)
 
-
-
-## v0.5.3-beta.1 (2025-02-20)
-
 ### Fix
 
 * Show newest on top on 'show all' archive page ([`7f52f92`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/7f52f927ca16e59fc61de5246839bb0e90cac833))
