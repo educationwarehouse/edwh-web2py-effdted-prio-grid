@@ -270,6 +270,7 @@ def effective_dated_grid(
             args=edg_args,
             # **kwp,
             user_signature=False,
+            orderby=~table.effdt,
             links=[lambda row: A(BUTTON("Restore"), _href=URL(args=["restore", row.id]))],
         )
     elif restore:
@@ -464,7 +465,7 @@ def effective_dated_grid(
             # th[0]: board.id
             table_field = th[0]
             table_field: str = table_field.decode() if isinstance(table_field, bytes) else table_field
-            th[0] = table_field.split(".")[-1] # without .encode
+            th[0] = table_field.split(".")[-1]  # without .encode
 
         # color the cells that have a different value than the cell below
         rows = htable.elements("tr")
