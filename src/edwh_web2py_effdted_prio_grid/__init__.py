@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2023-present Remco Boerma <remco.b@educationwarehouse.nl>
 #
 # SPDX-License-Identifier: MIT
+import datetime as dt
 import typing
 import uuid
 from typing import Optional
@@ -9,7 +10,7 @@ from gluon import URL, current, redirect
 from gluon.html import BUTTON, DIV, SPAN, TAG, XML, A
 from gluon.sqlhtml import SQLFORM
 from pydal import DAL
-from pydal.objects import Field, Query, Table
+from pydal.objects import Field, Query, Row, Table
 
 
 def hide(field: Field):
@@ -34,6 +35,56 @@ def show(table: Table, *fields_to_show: Field | str):
     for field in all_fields:
         if field not in fields_to_show:
             hide(table[field])
+
+
+class EffectiveDatedTable(Table):
+    """
+    An effective dated table should have at least these columns:
+    """
+
+    id: Field
+    effdt: Field
+    effstatus: Field
+    prio: Field
+
+
+def now():
+    return dt.datetime.now()
+
+
+def latest_ed_for_query(
+    table: EffectiveDatedTable,
+    query: Query | bool,
+    apply_now: bool = True,
+    apply_effstatus: bool = False,
+    db: DAL | None = None,
+):
+    """
+    internal version of 'latest_ed' for when you have a query but no direct key
+    """
+    db = db or table._db
+
+    if apply_now:
+        query &= table.effdt <= now()
+    if apply_effstatus:
+        query &= table.effstatus == True
+
+    return (
+        db(query)
+        .select(
+            orderby=~table.effdt,  # get newest
+            limitby=(0, 1),  # we only get .first so why load more
+        )
+        .first()
+    )
+
+
+def latest_ed(table: EffectiveDatedTable, gid: str, gid_field: str = "gid", db: DAL | None = None) -> Row | None:
+    """
+    Get the most recent _ed row of a specific gid.
+    """
+    effdt_query = table[gid_field] == gid
+    return latest_ed_for_query(table, effdt_query, db=db)
 
 
 def is_uuid(value: str) -> bool:
@@ -212,12 +263,43 @@ def effective_dated_grid(
     restore = bool(request.args and len(request.args) >= 2 and request.args[0] == "restore")
     on_delete = bool(request.args and request.args[0] == "ondelete")
     # show_clean = len(request.args) == 0
-    pop_fields = kwp.pop("pop_fields", None) or []
+    pop_fields = kwp.pop("pop_fields", None) or ["sync_gid"]
 
     if not (deletable := kwp.pop("deletable", None)):
         table.effstatus.writable = False
 
     kwp.setdefault("searchable", custom_searchable)
+
+    # define the args that will be passed to the button below
+    if not request.args:
+        # if no args are given, show all from the table
+        button_args = ["all"]
+    elif request.args[0] in ("all", "archive"):
+        # remove the 'all' or 'archive' from the args to toggle between the two
+        button_args = request.args[1:]
+    else:
+        # in every other case add the 'archive' to the args to show the archive
+        # for edit or view screens
+        button_args = ["archive", *request.args]
+
+    # add a button to toggle between the archive and the active data
+    archive_button = A(
+        SPAN(_class="icon clock icon-clock glyphicon glyphicon-clock"),
+        XML("&nbsp;"),
+        SPAN(
+            "Hide Archive" if show_all or show_archive else "Show Archive",
+            _class="buttontext button",
+        ),
+        _href=URL(args=button_args),
+        # skip our arg when showing archive or append it when not showing active
+        _class="button btn btn-default btn-secondary",
+    )
+
+    # zet gid om naar ID want anders wordt web2py boos :(
+    # maar pas na de archive_button/... want anders raken andere URLs ook skuffed
+    if request.args and is_uuid(request.args[-1]):
+        if _row := latest_ed(table, request.args[-1]):
+            request.args[-1] = str(_row.id)
 
     # clean the optional 'archive_fields' key from kwp
     archive_fields = kwp.pop("archive_fields") if "archive_fields" in kwp else []
@@ -242,7 +324,8 @@ def effective_dated_grid(
 
     if on_delete:
         # handles the ondelete call generated from a delete button push on the grid
-        values = table[request.args[1]].as_dict()
+        # request.args[-1] is ondertussen omgezet van gid naar id
+        values = table[request.args[-1]].as_dict()
         del values["id"]
         values["effdt"] = request.now
         values["effstatus"] = False
@@ -270,10 +353,12 @@ def effective_dated_grid(
             args=edg_args,
             # **kwp,
             user_signature=False,
+            field_id=table[keyfieldname],  # used as id field for e.g. edit button
             orderby=~table.effdt,
             links=[lambda row: A(BUTTON("Restore"), _href=URL(args=["restore", row.id]))],
         )
     elif restore:
+        # restore is wel altijd op 'id' ipv gid om een specifieke versie terug te zetten!
         row_id = request.args[1]
         values = db(table.id == row_id).select().first().as_dict()
         values["effstatus"] = True
@@ -365,7 +450,7 @@ def effective_dated_grid(
                 # it will be repopulated for the new row, apply the current effective date
                 # and insert the row. The redirect(URL()) will reload the page, showing the new data
                 # without the regular grid handling the edit.
-                values = table[request.args[-1]].as_dict()
+                values = table[request.args[-1]].as_dict()  # request.args[-1] is ondertussen omgezet van gid naar id
                 old_values = values.copy()
                 values.update(form.vars)
 
@@ -387,14 +472,14 @@ def effective_dated_grid(
                     db.commit()
                     return redirect(URL())
 
-        def delete_button(idx):
+        def delete_button(gid):
             # since no onvalidation routine is called on delete, we have to write our own handler and button for it.
             # here's the button.
             return A(
                 SPAN(_class="icon trash icon-trash glyphicon glyphicon-trash"),
                 XML("&nbsp;"),
                 SPAN("Delete", _class="buttontext button"),
-                _href=URL(args=["ondelete", idx]),
+                _href=URL(args=["ondelete", gid]),
                 _onclick="return confirm('Are you sure you want to delete this?')",
                 _class="button btn btn-default btn-secondary",
             )
@@ -402,7 +487,7 @@ def effective_dated_grid(
         # add the delete link, and any links the user might have added
         links = kwp.pop("links", [])
         if deletable:
-            links.insert(0, {"header": "Delete", "body": lambda row: delete_button(row.id)})
+            links.insert(0, {"header": "Delete", "body": lambda row: delete_button(row[keyfieldname])})
 
         # create the grid with our own onvalidation routine, and the delete button
         # and the links the user might have added. the args are used to pass the
@@ -413,6 +498,7 @@ def effective_dated_grid(
             deletable=False,  # don't use the builtin delete funcitonality
             links=links,  # add the delete button
             args=edg_args,
+            field_id=table[keyfieldname],  # used as id field for e.g. edit button
             user_signature=False,
             **kwp,  # any user given options
         )
@@ -420,33 +506,9 @@ def effective_dated_grid(
         # print(db._lastsql[0])
         # print(db._lastsql[1])
 
-    # define the args that will be passed to the button below
-    if not request.args:
-        # if no args are given, show all from the table
-        button_args = ["all"]
-    elif request.args[0] in ("all", "archive"):
-        # remove the 'all' or 'archive' from the args to toggle between the two
-        button_args = request.args[1:]
-    else:
-        # in every other case add the 'archive' to the args to show the archive
-        # for edit or view screens
-        button_args = ["archive", *request.args]
-
-    # add a button to toggle between the archive and the active data
-    archive_button = A(
-        SPAN(_class="icon clock icon-clock glyphicon glyphicon-clock"),
-        XML("&nbsp;"),
-        SPAN(
-            "Hide Archive" if show_all or show_archive else "Show Archive",
-            _class="buttontext button",
-        ),
-        _href=URL(args=button_args),
-        # skip our arg when showing archive or append it when not showing active
-        _class="button btn btn-default btn-secondary",
-    )
-
     # if show_archive is true, show a table with the change history for the current record
     if show_archive:
+        # request.args[-1] is ondertussen omgezet van gid naar id
         keyfield = getattr(table, keyfieldname)
         current_record = table[request.args[-1]]
         htable = db(keyfield == current_record[keyfieldname]).select(*archive_fields, orderby=~table.effdt)
