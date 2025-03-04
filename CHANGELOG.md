@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.0 (2025-03-04)
+
+### Feature
+
+* Support `gid` in addition to 'id' in grid form urls ([`384b759`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/384b7591bda860eae40c72e4bc1638d0dd5f318b))
+
 ## v0.5.3 (2025-02-20)
 
 ### Fix
