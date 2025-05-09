@@ -489,11 +489,14 @@ def effective_dated_grid(
         if deletable:
             links.insert(0, {"header": "Delete", "body": lambda row: delete_button(row[keyfieldname])})
 
+        # this way, indexes are used better:
+        rows = db(query).select(table.id)
+
         # create the grid with our own onvalidation routine, and the delete button
         # and the links the user might have added. the args are used to pass the
         # show_archive parameter to the grid. all kwp are passed on to the grid.
         grid = SQLFORM.grid(
-            db(query),
+            db(table.id.belongs(rows)),
             onvalidation=onvalidation,  # force our own onvalidation handler, which call any given onvalidation routines
             deletable=False,  # don't use the builtin delete funcitonality
             links=links,  # add the delete button
