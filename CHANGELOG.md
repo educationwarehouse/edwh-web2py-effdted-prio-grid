@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.1 (2025-05-09)
+
+### Fix
+
+* Speed up `effective_dated_grid` by first getting list of relevant ids for query ([`4e7625c`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/4e7625cf7ec2fb740c1fef360fbda4c69d94b8f1))
+
 ## v0.6.0 (2025-03-04)
 
 ### Feature
