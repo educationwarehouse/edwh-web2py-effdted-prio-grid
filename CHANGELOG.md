@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.2 (2026-03-10)
+
+### Fix
+
+* Ensure `table.id.belongs(rows)` is passed a list of ids instead of Rows ([`b201b81`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/b201b8147760f18039af53814d82e560697e3e6e))
+
 ## v0.6.1 (2025-05-09)
 
 ### Fix
