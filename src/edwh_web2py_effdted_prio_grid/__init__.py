@@ -490,7 +490,7 @@ def effective_dated_grid(
             links.insert(0, {"header": "Delete", "body": lambda row: delete_button(row[keyfieldname])})
 
         # this way, indexes are used better:
-        rows = db(query).select(table.id)
+        rows = db(query).select(table.id).column("id")
 
         # create the grid with our own onvalidation routine, and the delete button
         # and the links the user might have added. the args are used to pass the
