@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.3 (2026-05-11)
+
+### Fix
+
+* Exclude Virtual Fields from csv-export to prevent `KeyError` on `self.rows.export_to_csv_file()` ([`70c452e`](https://github.com/educationwarehouse/edwh-web2py-effdted-prio-grid/commit/70c452e7a7c4828f4b025af06e20a756e748c6f0))
+
 ## v0.6.2 (2026-03-10)
 
 ### Fix
