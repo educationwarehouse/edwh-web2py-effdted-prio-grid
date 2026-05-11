@@ -10,7 +10,7 @@ from gluon import URL, current, redirect
 from gluon.html import BUTTON, DIV, SPAN, TAG, XML, A
 from gluon.sqlhtml import SQLFORM
 from pydal import DAL
-from pydal.objects import Field, Query, Row, Table
+from pydal.objects import Field, FieldMethod, FieldVirtual, Query, Row, Table
 
 
 def hide(field: Field):
@@ -491,6 +491,12 @@ def effective_dated_grid(
 
         # this way, indexes are used better:
         rows = db(query).select(table.id).column("id")
+
+        if request.vars.get("_export_type"):
+            # csv export does not work for virtual fields
+            fields = kwp.pop("fields", list(table))
+            fields = [fld for fld in fields if not isinstance(fld, (FieldVirtual, FieldMethod))]
+            kwp["fields"] = fields
 
         # create the grid with our own onvalidation routine, and the delete button
         # and the links the user might have added. the args are used to pass the
