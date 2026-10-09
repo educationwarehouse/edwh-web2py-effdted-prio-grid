@@ -1,0 +1,52 @@
+version = 1
+revision = 5
+requires-python = ">=3.10"
+resolution-markers = [
+    "python_full_version >= '3.12' and sys_platform == 'emscripten'",
+    "python_full_version < '3.12' or sys_platform != 'emscripten'",
+]
+
+[[package]]
+name = "edwh-web2py-effdted-prio-grid"
+version = "0.6.3"
+source = { editable = "." }
+
+[package.optional-dependencies]
+dev = [
+    { name = "web2py-gluon" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "web2py-gluon", marker = "extra == 'dev'" }]
+provides-extras = ["dev"]
+
+[[package]]
+name = "pydal"
+version = "20260520.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/20/4e/1d576fcb6857f56cd0aeb413c387044fd609140628d1c401b7ae29ee6190/pydal-20260520.0.tar.gz", hash = "sha256:a1a01d28655231b7e0893ca13e9c92084549f7761042e1ae9ef70d37146737c4", size = 555035, upload-time = "2026-05-21T02:05:37.153Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a6/44/dd4e3dd0b0fa4c9d5467b2fab11b1b2c208dd4cc460540d73abfcf40e1d8/pydal-20260520.0-py2.py3-none-any.whl", hash = "sha256:f3dc3d4f9c2c032984479722834750778480c8c0ca7a51c3e40084cde3372a5d", size = 253221, upload-time = "2026-05-21T02:05:34.921Z" },
+]
+
+[[package]]
+name = "web2py-gluon"
+version = "2.26.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydal" },
+    { name = "yatl" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5e/0c/0a07231e1f697a895f1312970d6614dd4cae942923e6addb90fd455ea0c2/web2py_gluon-2.26.1.tar.gz", hash = "sha256:ac58f555d74c246c580fb0ca60dbd958ab18b09e411de34dc6ea975da8ad8255", size = 1250513, upload-time = "2023-11-07T11:28:55.277Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/23/35/e2acc2b90c4d54131e4c8b9ef1f0dc34da9ba2284fb329a3834fa2598df9/web2py_gluon-2.26.1-py2.py3-none-any.whl", hash = "sha256:45d4dd0b18531dbad162afdca40d9450e6851ec537fa6b005f091e89e1038d95", size = 1401904, upload-time = "2023-11-07T11:28:52.38Z" },
+]
+
+[[package]]
+name = "yatl"
+version = "20260805.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/33/bf/5456f2fa12811b4ce4dd82741ad781d834ff4f4865b75f775e50c3e9ac3e/yatl-20260805.1.tar.gz", hash = "sha256:ca09b1a4be97dece288db44a98dbdd3070f889381e503bc5be7603829879e92e", size = 22809, upload-time = "2026-08-05T19:24:14.556Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/29/ed/0176cb9cec10fbce6ef74a31150b5f6e5e125864efe472becf14d7ad1cff/yatl-20260805.1-py3-none-any.whl", hash = "sha256:12222e2b0b9d38113ef9d61c230ca572a738727f8b91457cea703d0e99ae31b5", size = 19379, upload-time = "2026-08-05T19:24:13.102Z" },
+]
